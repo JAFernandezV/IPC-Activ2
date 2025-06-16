@@ -22,4 +22,15 @@ Este proyecto tiene como objetivo analizar la expresión génica de un conjunto 
 │       ├── borrador.R    # Contiene los códigos originales, algunos análisis complementarios y modificaciones
 │       └── definitivo    # Script con el análisis usado para generar los plots en la carpeta de Graficas
 ├── README.md          # Documentación principal
-└── LICENSE            # Archivo de licencia
+└── LICENSE            # Archivo de licencia  
+
+## Tablas de resultados
+
+Las siguientes tablas fueron generadas a partir del análisis estadístico realizado con R y contienen los datos procesados:
+
+- `normality_results.csv`: Resultado de las pruebas de normalidad para distintos conjuntos de variables bioquímicas.
+- `tabla_modelo2.csv`: Tabla de resultados del segundo modelo lineal ajustado.
+- `tabla_modelo3_edad.csv`: Modelo lineal con interacción entre tratamiento, edad y tipo de tumor.
+
+Ubicación: `/Expresión genica/results/tables/`
+
