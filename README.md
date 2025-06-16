@@ -13,8 +13,8 @@ Este proyecto tiene como objetivo analizar la expresión génica de un conjunto 
 │   ├── data/ 
 │       └── Dataset_expresión_genes.csv    # Datos originales para el análisis tipo CSV
 │   ├── docs/ 								#esta carpeta contiene varios papers que usamos como guía para determinar qué vale la pena analizar
-│   ├── Graficas/ 							# Aquí se muestran los resultados obtenidos al ejecutar el script
-│       ├── Boxplot.png   		# Comparación segun tratamiento en la expresión de distintos genes
+│   ├── Resultados/ 							# Aquí se muestran los resultados obtenidos al ejecutar el script
+│       ├── Boxplot.png   		# Comparación según tratamiento en la expresión de distintos genes
 │       ├── heatmap.png   		# Comparación clusterizada en los niveles de expresión según pacientes 
 │       ├── Histogramas1.png   # Análisis de normalidad en la distribución de datos del primer set de variables bioquímicas analizadas 
 │       └── Histogramas1.png   # Análisis de normalidad en la distribución de datos del segundo set de variables bioquímicas analizadas 
