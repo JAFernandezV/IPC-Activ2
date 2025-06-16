@@ -1,0 +1,128 @@
+---
+title: "Actividad 2"
+author: "Andres Meneses"
+date: "2025-05-08"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(gtsummary)
+library(nortest)
+library(car)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+```
+
+## R Markdown
+
+
+```{r cars}
+datos <- read.csv("C:/Users/Usuario/Documents/Maestria Bioinformatica/Estadística y R para Ciencias de la Salud/actividad 2/Dataset expresión genes.csv")
+head(datos)
+
+```
+
+## Including Plots
+
+
+```{r pressure, echo=FALSE}
+# Convertir todas las columnas del bloque de genes a numérico por seguridad
+genes <- datos[, 10:55] %>%
+  mutate(across(everything(), ~ as.numeric(as.character(.))))
+
+resultados_normalidad <- apply(genes, 2, function(x) {
+  if (length(na.omit(x)) >= 3 && length(na.omit(x)) <= 5000) {
+    shapiro.test(x)$p.value
+  } else {
+    NA
+  }
+})
+
+tabla_normalidad <- data.frame(
+  Gen = names(resultados_normalidad),
+  P_value = resultados_normalidad
+)
+
+tabla_normalidad %>% arrange(P_value)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+genes <- datos[, 10:55]
+tratamientos <- unique(datos$tratamiento)
+
+# Crear matriz de p-valores
+pvalores_trat <- matrix(NA, nrow = ncol(genes), ncol = length(tratamientos),
+                        dimnames = list(colnames(genes), tratamientos))
+
+# Loop para test de Shapiro-Wilk por tratamiento
+for (i in seq_along(genes)) {
+  for (trat in tratamientos) {
+    valores <- datos[datos$tratamiento == trat, i + 9]  # +9 por el desplazamiento de columnas
+    if (length(na.omit(valores)) >= 3) {
+      pvalores_trat[i, trat] <- shapiro.test(valores)$p.value
+    }
+  }
+}
+
+knitr::kable(format(round(pvalores_trat, 4), scientific = FALSE), caption = "P-valores Shapiro-Wilk por tratamiento")
+```
+
+
+```{r}
+histogramas <- list()
+genes_mostrar <- names(genes)[sapply(genes, is.numeric)][1:6]  # Asegura que sean numéricos
+
+for (gen in genes_mostrar) {
+  p <- ggplot(datos, aes_string(x = gen, fill = "trat")) +
+    geom_histogram(aes(y = ..density..), bins = 30, alpha = 0.5, position = "identity") +
+    geom_density(alpha = 0.3) +
+    theme_minimal() +
+    labs(title = paste("Distribución de", gen), y = "Densidad", x = gen)
+  
+  histogramas[[gen]] <- p
+}
+
+do.call(grid.arrange, c(histogramas, ncol = 2))
+```
+```{r}
+# Verifica los nombres de las columnas
+colnames(datos)
+
+datos$trat <- make.names(datos$trat)  # Si fuera necesario, conviértelo a un formato estándar
+
+datos %>%
+  tbl_strata(
+    strata = "trat",  # Usamos 'trat' en lugar de 'tratamiento'
+    .tbl_fun = ~ .x %>%
+      tbl_summary(
+        by = tumor,
+        type = all_continuous() ~ "continuous2",
+        statistic = all_continuous() ~ c("{median} ({p25}, {p75})", "{mean} ± {sd}"),
+        digits = all_continuous() ~ 1
+      ) %>%
+      add_p(test = all_continuous() ~ "t.test")
+  )
+
+```
+```{r}
+mediana_edad <- median(datos$edad, na.rm = TRUE)
+
+datos <- datos %>%
+  mutate(edad_cat = cut(edad,
+                        breaks = c(-Inf, mediana_edad, Inf),
+                        labels = c("Menor de la mediana", "Mayor o igual a la mediana")
+  ))
+
+datos %>%
+  tbl_summary(
+    by = edad_cat,
+    type = all_continuous() ~ "continuous2",
+    statistic = all_continuous() ~ c("{median} ({p25}, {p75})", "{mean} ± {sd}"),
+    digits = all_continuous() ~ 1
+  ) %>%
+  add_p()
+```
+
