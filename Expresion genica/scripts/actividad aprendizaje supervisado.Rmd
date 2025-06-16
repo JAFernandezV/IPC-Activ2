@@ -1,0 +1,138 @@
+---
+title: "actividad 2 aprendizaje supervisado"
+author: "Andres Meneses"
+date: "2025-05-26"
+output: html_document
+---
+
+# 1. Preparación del entorno
+
+Instalamos los paquetes necesarios. Solo hay que ejecutar estas líneas
+si no tienes instalados los paquetes en tu RStudio.
+
+```{r setup, include=FALSE}
+
+```
+
+```{r}
+# Cargamos las librerías para poder usar sus funciones en el script
+library(tidyverse)
+library(caret)
+library(rpart)
+library(randomForest)
+library(rpart.plot)
+```
+
+# 2. Carga de datos
+
+Leemos el archivo principal con los datos
+Cambia la ruta a donde tengas tu archivo 'data.csv'
+Leemos el archivo con la descripción de las variables (informativo)
+
+```{r cars}
+data <- read.csv("C:/Users/Usuario/Documents/Maestria Bioinformatica/Algoritmos e Inteligencia Artificial/actividad 2/data.csv")
+
+# Leemos el archivo con la descripción de las variables (informativo)
+variables <- read.csv("C:/Users/Usuario/Documents/Maestria Bioinformatica/Algoritmos e Inteligencia Artificial/actividad 2/variables.csv",
+                      sep = ";", header = TRUE)
+```
+
+# 3. Preparación de los datos
+
+En este conjunto de datos, la variable objetivo que queremos predecir es la columna 'Diagnosis'
+Convertimos esta columna en un factor para clasificación
+
+```{r pressure, echo=FALSE}
+
+target_column <- "Diagnosis"
+data[[target_column]] <- as.factor(data[[target_column]])
+
+# Eliminamos columnas constantes o sin variabilidad, que no aportan información al modelo
+# Esto evita errores al entrenar los modelos
+data <- data[, sapply(data, function(x) length(unique(x[!is.na(x)])) > 1)]
+```
+
+# 4. División del conjunto de datos
+
+```{r}
+
+# Fijamos la semilla para que la división sea reproducible
+set.seed(123)
+
+# Usamos caret para crear índices de entrenamiento manteniendo la proporción de clases
+trainIndex <- createDataPartition(data[[target_column]], p = 0.7, list = FALSE)
+
+# Creamos los conjuntos de entrenamiento y prueba
+trainData <- data[trainIndex, ]
+testData <- data[-trainIndex, ]
+
+# Nos aseguramos que testData tenga las mismas columnas que trainData
+testData <- testData[, names(trainData)]
+
+```
+
+# 5. Entrenamiento de modelos supervisados
+
+```{r}
+# Definimos la fórmula para el modelo, ejemplo: Diagnosis ~ todas las demás variables
+formula_modelo <- as.formula(paste(target_column, "~ ."))
+
+# 5.1 Modelo Árbol de Decisión usando rpart
+modelo_arbol <- rpart(formula_modelo, data = trainData, method = "class")
+
+# Predicción en el conjunto de prueba con el árbol
+pred_arbol <- predict(modelo_arbol, testData, type = "class")
+
+# Evaluación del modelo: matriz de confusión y métricas
+acc_arbol <- confusionMatrix(pred_arbol, testData[[target_column]])
+
+# 5.2 Modelo Random Forest
+modelo_rf <- randomForest(formula_modelo, data = trainData)
+
+# Predicción con Random Forest
+pred_rf <- predict(modelo_rf, testData)
+
+# Evaluación del modelo RF
+acc_rf <- confusionMatrix(pred_rf, testData[[target_column]])
+```
+
+# 6. Resultados y comparación
+```{r}
+# Imprimimos la precisión (accuracy) de cada modelo
+cat("Precisión Árbol de Decisión:\n")
+print(acc_arbol$overall["Accuracy"])
+
+cat("\nPrecisión Random Forest:\n")
+print(acc_rf$overall["Accuracy"])
+```
+
+# 7. Visualización de resultados
+
+```{r}
+# 7.1 Visualización del Árbol de Decisión
+# extra=104 agrega información de probabilidad y número de casos
+# box.palette define la paleta de colores para los nodos
+rpart.plot(modelo_arbol, main = "Árbol de Decisión", extra = 104, box.palette = "BuGn")
+
+# 7.2 Gráfico de importancia de variables en Random Forest
+varImpPlot(modelo_rf, main = "Importancia de las Variables - Random Forest")
+
+# 7.3 Gráfico de la matriz de confusión del Random Forest
+
+# Convertimos la tabla de confusión a un data.frame para graficar con ggplot2
+library(ggplot2)
+cm_rf <- as.data.frame(acc_rf$table)
+
+# Renombramos columnas para facilitar la interpretación
+colnames(cm_rf) <- c("Predicho", "Real", "Frecuencia")
+
+# Creamos gráfico de calor para visualizar la matriz de confusión
+ggplot(cm_rf, aes(x = Real, y = Predicho, fill = Frecuencia)) +
+  geom_tile(color = "white") +                      # Celdas con borde blanco
+  geom_text(aes(label = Frecuencia), vjust = 1) +  # Número de casos en cada celda
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(title = "Matriz de Confusión - Random Forest") +
+  theme_minimal()
+
+```
+
