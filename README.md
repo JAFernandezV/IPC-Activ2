@@ -9,16 +9,17 @@ Este proyecto tiene como objetivo analizar la expresión génica de un conjunto 
 •	Comparar los efectos de dos tratamientos distintos sobre la expresión génica considerando tipos de tumor 
 
 ## Estructura del proyecto
-├── data/
-│   ├── raw/           # Datos originales
-│   └── processed/     # Datos procesados
+├── Expresión genica/  #Carpeta madre para estructurar las subcarpetas y mejorar el orden
+│   ├── data/ 
+│       └── Dataset_expresión_genes.csv    # Datos originales para el análisis tipo CSV
+│   ├── docs/ 								#esta carpeta contiene varios papers que usamos como guía para determinar qué vale la pena analizar
+│   ├── Graficas/ 							# Aquí se muestran los resultados obtenidos al ejecutar el script
+│       ├── Boxplot.png   		# Comparación segun tratamiento en la expresión de distintos genes
+│       ├── heatmap.png   		# Comparación clusterizada en los niveles de expresión según pacientes 
+│       ├── Histogramas1.png   # Análisis de normalidad en la distribución de datos del primer set de variables bioquímicas analizadas 
+│       └── Histogramas1.png   # Análisis de normalidad en la distribución de datos del segundo set de variables bioquímicas analizadas 
 ├── scripts/
-│   ├── preprocessing/ # Scripts de preprocesamiento
-│   ├── analysis/      # Scripts de análisis
-│   └── visualization/ # Scripts de visualización
-├── results/
-│   ├── figures/       # Gráficos generados
-│   └── tables/        # Tablas de resultados
-├── docs/              # Documentación adicional
+│       ├── borrador.R    # Contiene los códigos originales, algunos análisis complementarios y modificaciones
+│       └── definitivo    # Script con el análisis usado para generar los plots en la carpeta de Graficas
 ├── README.md          # Documentación principal
 └── LICENSE            # Archivo de licencia
